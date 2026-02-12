@@ -9,3 +9,5 @@ Node 24.13.0 / npm 11.6.2
 Rendu meme: Canvas (client-side)
 
 UI: Tailwind via Vite
+
+Run php artisan storage:link to expose meme images
