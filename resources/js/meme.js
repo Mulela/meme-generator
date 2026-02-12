@@ -27,17 +27,10 @@ if (els.form && els.canvas) {
     const setStatus = (msg, type = "info") => {
         els.statusBox.textContent = msg;
 
-        // petite coloration selon type
         els.statusBox.classList.remove(
-            "border-zinc-800",
-            "bg-zinc-900/20",
-            "text-zinc-400",
-            "border-red-900/40",
-            "bg-red-950/30",
-            "text-red-200",
-            "border-emerald-900/40",
-            "bg-emerald-950/30",
-            "text-emerald-200"
+            "border-zinc-800", "bg-zinc-900/20", "text-zinc-400",
+            "border-red-900/40", "bg-red-950/30", "text-red-200",
+            "border-emerald-900/40", "bg-emerald-950/30", "text-emerald-200"
         );
 
         if (type === "error") {
@@ -55,6 +48,7 @@ if (els.form && els.canvas) {
     };
 
     const fitCanvasToImage = (img) => {
+        // On garde la résolution originale pour un rendu net
         els.canvas.width = img.naturalWidth || img.width;
         els.canvas.height = img.naturalHeight || img.height;
     };
@@ -66,8 +60,7 @@ if (els.form && els.canvas) {
 
         for (const w of words) {
             const test = line ? `${line} ${w}` : w;
-            const m = ctx.measureText(test).width;
-            if (m > maxWidth && line) {
+            if (ctx.measureText(test).width > maxWidth && line) {
                 lines.push(line);
                 line = w;
             } else {
@@ -100,27 +93,23 @@ if (els.form && els.canvas) {
         const top = (els.topText.value || "").toUpperCase();
         const bottom = (els.bottomText.value || "").toUpperCase();
 
+        // Un peu plus d’air en haut/bas
         const margin = Math.max(40, Math.floor(size * 1.2));
         const maxTextWidth = W * 0.92;
 
         const topLines = wrapLines(top, maxTextWidth);
         topLines.forEach((ln, i) => {
-            const y = margin + i * (size + 8); // +8 = meilleure respiration
+            const y = margin + i * (size + 8);
             if (outlineEnabled) ctx.strokeText(ln, W / 2, y);
             ctx.fillText(ln, W / 2, y);
         });
 
-
         const bottomLines = wrapLines(bottom, maxTextWidth);
-        bottomLines
-            .slice()
-            .reverse()
-            .forEach((ln, i) => {
-                const y = H - margin - i * (size + 8);
-                if (outlineEnabled) ctx.strokeText(ln, W / 2, y);
-                ctx.fillText(ln, W / 2, y);
-            });
-
+        bottomLines.slice().reverse().forEach((ln, i) => {
+            const y = H - margin - i * (size + 8);
+            if (outlineEnabled) ctx.strokeText(ln, W / 2, y);
+            ctx.fillText(ln, W / 2, y);
+        });
     };
 
     const loadImageFile = (file) => {
@@ -128,11 +117,11 @@ if (els.form && els.canvas) {
 
         const okTypes = ["image/png", "image/jpeg"];
         if (!okTypes.includes(file.type)) {
-            setStatus("Invalid file type. Please upload a PNG or JPG.", "error");
+            setStatus("Type invalide. Choisis un PNG ou JPG.", "error");
             return;
         }
         if (file.size > 5 * 1024 * 1024) {
-            setStatus("File too large. Max 5MB.", "error");
+            setStatus("Fichier trop grand. Max 5MB.", "error");
             return;
         }
 
@@ -143,17 +132,17 @@ if (els.form && els.canvas) {
             fitCanvasToImage(img);
             drawMeme();
             setEnabled(true);
-            setStatus("Preview ready. You can download or save to gallery.", "success");
+            setStatus("Aperçu prêt. Tu peux télécharger ou enregistrer.", "success");
             URL.revokeObjectURL(url);
         };
         img.onerror = () => {
-            setStatus("Could not load image. Try another file.", "error");
+            setStatus("Impossible de charger l’image. Essaie une autre.", "error");
             URL.revokeObjectURL(url);
         };
         img.src = url;
     };
 
-    const downloadPng = async () => {
+    const downloadPng = () => {
         if (!sourceImage) return;
 
         els.canvas.toBlob((blob) => {
@@ -171,21 +160,20 @@ if (els.form && els.canvas) {
 
     const readResponse = async (res) => {
         const ct = (res.headers.get("content-type") || "").toLowerCase();
-        if (ct.includes("application/json")) return await res.json();
-        return await res.text();
+        return ct.includes("application/json") ? await res.json() : await res.text();
     };
 
     const saveToGallery = async () => {
         if (!sourceImage) return;
 
-        setStatus("Saving...", "info");
+        setStatus("Enregistrement...", "info");
         els.saveBtn.disabled = true;
 
         const csrf = els.form.querySelector('input[name="_token"]').value;
 
         els.canvas.toBlob(async (blob) => {
             try {
-                if (!blob) throw new Error("Export failed (blob is null).");
+                if (!blob) throw new Error("Export PNG impossible.");
 
                 const fd = new FormData();
                 fd.append("top_text", els.topText.value || "");
@@ -207,16 +195,11 @@ if (els.form && els.canvas) {
 
                 if (!res.ok) {
                     console.error("SAVE FAILED", { status: res.status, payload });
-                    // Affichage clair pour toi
-                    if (typeof payload === "string") {
-                        setStatus(`Save failed (${res.status}): ${payload}`, "error");
-                    } else {
-                        // Laravel validation 422: payload.errors
-                        const msg =
-                            payload?.message ||
-                            (payload?.errors ? JSON.stringify(payload.errors) : JSON.stringify(payload));
-                        setStatus(`Save failed (${res.status}): ${msg}`, "error");
-                    }
+                    const msg =
+                        typeof payload === "string"
+                            ? payload
+                            : (payload?.message || JSON.stringify(payload?.errors || payload));
+                    setStatus(`Échec (${res.status}) : ${msg}`, "error");
                     els.saveBtn.disabled = false;
                     return;
                 }
@@ -226,10 +209,10 @@ if (els.form && els.canvas) {
                     return;
                 }
 
-                setStatus("Saved!", "success");
+                setStatus("Enregistré !", "success");
             } catch (e) {
                 console.error(e);
-                setStatus(`Save failed: ${e.message}`, "error");
+                setStatus(`Échec : ${e.message}`, "error");
                 els.saveBtn.disabled = false;
             }
         }, "image/png");
@@ -239,8 +222,7 @@ if (els.form && els.canvas) {
     els.pickImageBtn.addEventListener("click", () => els.imageInput.click());
 
     els.imageInput.addEventListener("change", (e) => {
-        const file = e.target.files?.[0];
-        loadImageFile(file);
+        loadImageFile(e.target.files?.[0]);
     });
 
     ["input", "keyup"].forEach((evt) => {
@@ -252,7 +234,7 @@ if (els.form && els.canvas) {
 
     els.toggleOutline.addEventListener("click", () => {
         outlineEnabled = !outlineEnabled;
-        els.outlineLabel.textContent = outlineEnabled ? "Enabled" : "Disabled";
+        els.outlineLabel.textContent = outlineEnabled ? "Activé" : "Désactivé";
         drawMeme();
     });
 
@@ -267,24 +249,20 @@ if (els.form && els.canvas) {
         els.textSize.value = "48";
         els.textSizeLabel.textContent = "48";
         outlineEnabled = true;
-        els.outlineLabel.textContent = "Enabled";
+        els.outlineLabel.textContent = "Activé";
         els.imageInput.value = "";
         setEnabled(false);
-        setStatus("Select an image to enable preview.", "info");
+        setStatus("Sélectionne une image pour activer l’aperçu.", "info");
     });
 
     // Drag & drop
     const prevent = (e) => { e.preventDefault(); e.stopPropagation(); };
-
-    ["dragenter", "dragover", "dragleave", "drop"].forEach((ev) => {
-        els.dropZone.addEventListener(ev, prevent);
-    });
+    ["dragenter", "dragover", "dragleave", "drop"].forEach((ev) => els.dropZone.addEventListener(ev, prevent));
 
     els.dropZone.addEventListener("drop", (e) => {
-        const file = e.dataTransfer?.files?.[0];
-        loadImageFile(file);
+        loadImageFile(e.dataTransfer?.files?.[0]);
     });
 
     setEnabled(false);
-    setStatus("Select an image to enable preview.", "info");
+    setStatus("Sélectionne une image pour activer l’aperçu.", "info");
 }
