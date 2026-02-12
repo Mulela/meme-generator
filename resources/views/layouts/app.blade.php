@@ -14,10 +14,12 @@
             </a>
 
             <nav class="flex items-center gap-2 text-sm">
-                <a href="{{ route('editor') }}" class="px-3 py-2 rounded-lg hover:bg-zinc-900 {{ request()->routeIs('editor') ? 'bg-zinc-900' : '' }}">
+                <a href="{{ route('editor') }}"
+                   class="px-3 py-2 rounded-lg hover:bg-zinc-900 {{ request()->routeIs('editor') ? 'bg-zinc-900' : '' }}">
                     Editor
                 </a>
-                <a href="{{ route('gallery') }}" class="px-3 py-2 rounded-lg hover:bg-zinc-900 {{ request()->routeIs('gallery') ? 'bg-zinc-900' : '' }}">
+                <a href="{{ route('gallery') }}"
+                   class="px-3 py-2 rounded-lg hover:bg-zinc-900 {{ request()->routeIs('gallery') ? 'bg-zinc-900' : '' }}">
                     Gallery
                 </a>
             </nav>

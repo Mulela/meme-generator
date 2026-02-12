@@ -12,18 +12,33 @@
     </a>
 </div>
 
+@if (session('success'))
+    <div class="mt-6 rounded-xl border border-zinc-800 bg-zinc-900/30 p-3 text-sm text-zinc-200">
+        {{ session('success') }}
+    </div>
+@endif
+
 <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    @for ($i = 0; $i < 6; $i++) <div class="rounded-2xl border border-zinc-800 bg-zinc-950 p-3">
-        <div class="aspect-video rounded-xl bg-zinc-900/30 border border-zinc-800 flex items-center justify-center">
-            <span class="text-xs text-zinc-500">Meme placeholder</span>
+    @forelse ($memes as $meme)
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-950 p-3">
+            <div class="aspect-video rounded-xl bg-zinc-900/30 border border-zinc-800 flex items-center justify-center overflow-hidden">
+                <span class="text-xs text-zinc-500">Image will appear after Canvas step</span>
+            </div>
+
+            <div class="mt-3 flex items-center justify-between">
+                <span class="text-xs text-zinc-500">#{{ $meme->id }}</span>
+                <a href="{{ route('memes.download', $meme) }}"
+                   class="rounded-lg border border-zinc-800 px-3 py-2 text-xs text-zinc-200 hover:bg-zinc-900">
+                    Download
+                </a>
+            </div>
         </div>
-        <div class="mt-3 flex items-center justify-between">
-            <span class="text-xs text-zinc-500">—</span>
-            <button disabled class="rounded-lg border border-zinc-800 px-3 py-2 text-xs text-zinc-400 cursor-not-allowed">
-                Download
-            </button>
-        </div>
+    @empty
+        <div class="text-sm text-zinc-400">No memes yet.</div>
+    @endforelse
 </div>
-@endfor
+
+<div class="mt-6">
+    {{ $memes->links() }}
 </div>
 @endsection
