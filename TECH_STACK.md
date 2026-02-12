@@ -1,13 +1,27 @@
-Laravel Framework 12.51.0
+# Meme Generator – SUPINFO Admission Project
 
-PHP 8.4.5
+## Tech Stack
+- Laravel Framework 12.51.0
+- PHP 8.4.5
+- SQLite (development)
+- Node 24.13.0
+- Tailwind CSS (via Vite)
 
-SQLite (dev)
+## Setup
 
-Node 24.13.0 / npm 11.6.2
+1. Install dependencies
+   composer install
+   npm install
 
-Rendu meme: Canvas (client-side)
+2. Generate key
+   php artisan key:generate
 
-UI: Tailwind via Vite
+3. Run migrations
+   php artisan migrate
 
-Run php artisan storage:link to expose meme images
+4. Create storage link (if not exists)
+   php artisan storage:link
+
+5. Run dev server
+   php artisan serve
+   npm run dev
