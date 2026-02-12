@@ -10,8 +10,8 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Controls (FORM) -->
-        <form method="POST" action="{{ route('memes.store') }}"
+        <!-- Controls -->
+        <form id="memeForm" method="POST" action="{{ route('memes.store') }}" enctype="multipart/form-data"
               class="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-sm">
             @csrf
 
@@ -30,25 +30,33 @@
             <div class="mt-4 space-y-4">
                 <div>
                     <label class="text-xs text-zinc-400">Image</label>
-                    <div class="mt-2 flex items-center gap-3">
-                        <input type="file" accept="image/png,image/jpeg"
-                               class="block w-full text-sm text-zinc-300
-                               file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-900 file:px-4 file:py-2 file:text-sm file:text-zinc-100 hover:file:bg-zinc-800" />
+
+                    <div id="dropZone"
+                         class="mt-2 rounded-xl border border-dashed border-zinc-800 bg-zinc-900/20 p-4 hover:bg-zinc-900/30 transition cursor-pointer">
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <p class="text-sm text-zinc-200">Click to upload or drag & drop</p>
+                                <p class="mt-1 text-xs text-zinc-500">PNG/JPG · max 5MB</p>
+                            </div>
+                            <button type="button" id="pickImageBtn"
+                                    class="rounded-lg bg-zinc-900 px-3 py-2 text-xs hover:bg-zinc-800">
+                                Choose file
+                            </button>
+                        </div>
                     </div>
-                    <p class="mt-2 text-xs text-zinc-500">PNG/JPG, max 5MB. (Canvas step will use this)</p>
+
+                    <input id="imageInput" type="file" accept="image/png,image/jpeg" class="hidden" />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="text-xs text-zinc-400">Top text</label>
-                        <input name="top_text" type="text" maxlength="100" placeholder="TOP TEXT"
-                               value="{{ old('top_text') }}"
+                        <input id="topText" name="top_text" type="text" maxlength="100" placeholder="TOP TEXT"
                                class="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-600" />
                     </div>
                     <div>
                         <label class="text-xs text-zinc-400">Bottom text</label>
-                        <input name="bottom_text" type="text" maxlength="100" placeholder="BOTTOM TEXT"
-                               value="{{ old('bottom_text') }}"
+                        <input id="bottomText" name="bottom_text" type="text" maxlength="100" placeholder="BOTTOM TEXT"
                                class="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-600" />
                     </div>
                 </div>
@@ -56,37 +64,42 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="text-xs text-zinc-400">Text size</label>
-                        <input type="range" min="20" max="80" value="48" class="mt-3 w-full" disabled />
-                        <p class="mt-1 text-xs text-zinc-500">Enabled after Canvas step.</p>
+                        <input id="textSize" type="range" min="20" max="80" value="48" class="mt-3 w-full" />
+                        <p class="mt-1 text-xs text-zinc-500"><span id="textSizeLabel">48</span> px</p>
                     </div>
                     <div class="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/30 px-3 py-2">
                         <div>
                             <p class="text-xs text-zinc-400">Outline</p>
-                            <p class="text-sm text-zinc-200">Enabled</p>
+                            <p class="text-sm text-zinc-200"><span id="outlineLabel">Enabled</span></p>
                         </div>
-                        <button type="button" disabled class="rounded-lg bg-zinc-900 px-3 py-2 text-xs text-zinc-400 cursor-not-allowed">
+                        <button type="button" id="toggleOutline"
+                                class="rounded-lg bg-zinc-900 px-3 py-2 text-xs hover:bg-zinc-800">
                             Toggle
                         </button>
                     </div>
                 </div>
 
                 <div class="flex flex-wrap gap-3 pt-2">
-                    <button type="button" disabled class="rounded-xl bg-zinc-800 px-4 py-2 text-sm text-zinc-400 cursor-not-allowed">
+                    <button type="button" id="downloadBtn"
+                            class="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                            disabled>
                         Download
                     </button>
 
-                    <button type="submit"
-                            class="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900">
+                    <button type="button" id="saveBtn"
+                            class="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
+                            disabled>
                         Save to gallery
                     </button>
 
-                    <button type="reset" class="ml-auto rounded-xl px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-900">
+                    <button type="button" id="resetBtn"
+                            class="ml-auto rounded-xl px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-900">
                         Reset
                     </button>
                 </div>
 
-                <div class="rounded-xl border border-zinc-800 bg-zinc-900/20 p-3 text-xs text-zinc-400">
-                    DB smoke test: Save will create a placeholder meme record (image will be generated in the next step).
+                <div id="statusBox" class="rounded-xl border border-zinc-800 bg-zinc-900/20 p-3 text-xs text-zinc-400">
+                    Select an image to enable preview.
                 </div>
             </div>
         </form>
@@ -98,9 +111,13 @@
                 <span class="text-xs text-zinc-500">Canvas (client-side)</span>
             </div>
 
-            <div class="mt-4 aspect-video rounded-xl border border-dashed border-zinc-800 bg-zinc-900/20 flex items-center justify-center">
-                <p class="text-sm text-zinc-500">Preview area (canvas will appear here)</p>
+            <div class="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/20 p-3">
+                <canvas id="memeCanvas" class="w-full rounded-lg bg-black"></canvas>
             </div>
+
+            <p class="mt-2 text-xs text-zinc-500">
+                Font: Impact (fallback to Arial Black / Arial).
+            </p>
         </section>
     </div>
 </div>
