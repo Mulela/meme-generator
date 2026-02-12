@@ -2,6 +2,5 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::view('/', 'editor')->name('editor');
+Route::view('/gallery', 'gallery')->name('gallery');
