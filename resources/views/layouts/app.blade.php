@@ -29,7 +29,8 @@
     </main>
 
     <footer class="mx-auto max-w-6xl px-4 pb-10 text-xs text-zinc-500">
-        Laravel {{ app()->version() }} · Tailwind 4.1.18 · SQLite (dev)
+        © {{ date('Y') }} – Projet mini application web
     </footer>
+
 </body>
 </html>
