@@ -48,10 +48,22 @@ if (els.form && els.canvas) {
     };
 
     const fitCanvasToImage = (img) => {
-        // On garde la résolution originale pour un rendu net
-        els.canvas.width = img.naturalWidth || img.width;
-        els.canvas.height = img.naturalHeight || img.height;
+        // Largeur max raisonnable pour éviter les problèmes d’échelle
+        const MAX_WIDTH = 800;
+
+        const naturalWidth = img.naturalWidth || img.width;
+        const naturalHeight = img.naturalHeight || img.height;
+
+        let ratio = 1;
+
+        if (naturalWidth > MAX_WIDTH) {
+            ratio = MAX_WIDTH / naturalWidth;
+        }
+
+        els.canvas.width = naturalWidth * ratio;
+        els.canvas.height = naturalHeight * ratio;
     };
+
 
     const wrapLines = (text, maxWidth) => {
         const words = text.split(" ").filter(Boolean);
